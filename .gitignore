@@ -1,0 +1,14 @@
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+
+*.csproj
+*.sln
+*.userprefs
+*.apk
+
+# OSX
+.DS_Store
+*.suo
