@@ -27,6 +27,12 @@ public class UnityEvent_IntMesh : UnityEngine.Events.UnityEvent <int,Mesh> {}
 [RequireComponent(typeof(TexturePointBlockCache))]
 public class TexturePointBlockRenderer : MonoBehaviour {
 
+	public enum PointType
+	{
+		Triangle,
+		Quad,
+	};
+
 	const int TTEXTUREPOINTBLOCK_MAX = 60;
 
 	[InspectorButton("OnTexturePointBlockDataChanged")]
@@ -38,17 +44,15 @@ public class TexturePointBlockRenderer : MonoBehaviour {
 
 
 	[InspectorButton("MakeDumbMesh")]
-	public bool		_MakeDumbMesh;
+	public bool			_MakeDumbMesh;
+	public PointType	PointGeometry = PointType.Triangle;		
 
 	[InspectorButton("UpdateMeshBoundsToCollider")]
 	public bool		_UpdateMeshBounds;
 
 	[Header("Add cullers etc here, or render everything")]
 	public UnityEvent_TexturePointBlockFilter	OnRenderFilter;
-
-	[Header("Custom mesh creation")]
-	public UnityEvent_IntMesh		CreateMesh;
-
+	
 	public bool			RenderWithInstances = false;
 
 	public bool			DebugBounds
@@ -68,6 +72,8 @@ public class TexturePointBlockRenderer : MonoBehaviour {
 		}
 	}
 
+
+	
 
 	public static void AddTriangleToMesh(ref List<Vector3> Positions,ref List<int> Indexes,ref List<Vector2> Uvs,Vector3 Position,int Index)
 	{
@@ -114,6 +120,68 @@ public class TexturePointBlockRenderer : MonoBehaviour {
 		Debug.Log ("New dumb mesh; " + Indexes.Count + " indexes, " + PointCount+ " input positions, " + (Indexes.Count / 3) + " triangles");
 
 		mesh.name = "DumbTriangleMesh x" + PointCount;
+
+		return mesh;
+	}
+
+	public static void AddQuadToMesh(ref List<Vector3> Positions,ref List<int> Indexes,ref List<Vector2> Uvs,Vector3 Position,int Index)
+	{
+		var pos0 = new Vector3( -1,-1,0 ) + Position;
+		var pos1 = new Vector3( 1,-1,0 ) + Position;
+		var pos2 = new Vector3( -1,1,0 ) + Position;
+		var pos3 = new Vector3( 1,1,0 ) + Position;
+
+		Positions.Add( pos0 );
+		Uvs.Add( new Vector2(Index,0) );
+		var i0 = Positions.Count-1;
+
+		Positions.Add( pos1 );
+		Uvs.Add( new Vector2(Index,1) );
+		var i1 = Positions.Count-1;
+
+		Positions.Add( pos2 );
+		Uvs.Add( new Vector2(Index,2) );
+		var i2 = Positions.Count-1;
+
+		Positions.Add( pos3 );
+		Uvs.Add( new Vector2(Index,3) );
+		var i3 = Positions.Count-1;
+
+		Indexes.Add( i0 );
+		Indexes.Add( i1 );
+		Indexes.Add( i2 );
+
+		Indexes.Add( i1 );
+		Indexes.Add( i2 );
+		Indexes.Add( i3 );
+	}
+
+	static public Mesh MakeDumbQuadMesh(int PointCount)
+	{
+		var Positions = new List<Vector3>();
+		var Uvs = new List<Vector2>();
+		var Indexes = new List<int>();
+
+		{
+			PointCount = Mathf.Min (PointCount, 65000/4);
+
+			//	center triangle around 0,0,0
+			for ( int i=0;	i<PointCount;	i++ )
+			{
+				AddQuadToMesh (ref Positions, ref Indexes, ref Uvs, Vector3.zero, i);
+			}
+		}
+
+		var mesh = new Mesh ();
+
+		//	re-setup existing one
+		mesh.bounds.SetMinMax( Vector3.zero, Vector3.one );
+		mesh.SetVertices( Positions );
+		mesh.SetUVs( 0, Uvs );
+		mesh.SetIndices( Indexes.ToArray(), MeshTopology.Triangles, 0 );
+		Debug.Log ("New dumb mesh; " + Indexes.Count + " indexes, " + PointCount+ " input positions, " + (Indexes.Count / 3) + " triangles");
+
+		mesh.name = "DumbQuadMesh x" + PointCount;
 
 		return mesh;
 	}
@@ -178,13 +246,13 @@ public class TexturePointBlockRenderer : MonoBehaviour {
 	{
 		var NewMesh = new Mesh();
 
-		//	try the overload first
-		CreateMesh.Invoke( MaxTriangles, NewMesh );
-
-		//	default if that does nothing
-		if ( NewMesh.triangles.Length == 0 )
+		if ( PointGeometry == PointType.Triangle )
 		{
 			NewMesh = MakeDumbTriangleMesh (MaxTriangles);
+		}
+		else if ( PointGeometry == PointType.Quad )
+		{
+			NewMesh = MakeDumbQuadMesh (MaxTriangles);
 		}
 
 		var mf = GetComponent<MeshFilter> ();

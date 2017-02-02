@@ -81,7 +81,7 @@ Material:
       second: 0.533
     - first:
         name: BounceScalar
-      second: 1.4
+      second: 0
     - first:
         name: DampenPerSec
       second: 0.2
@@ -90,10 +90,10 @@ Material:
       second: 0
     - first:
         name: EnableFloor_Boolean
-      second: 1
+      second: 0
     - first:
         name: GravityUnitPerSec
-      second: 3.82
+      second: 0
     - first:
         name: IdlePerlinUnitPerSec
       second: 0
@@ -118,4 +118,4 @@ Material:
       second: {r: 0, g: 0, b: 0, a: 0}
     - first:
         name: Avoid1
-      second: {r: 1.3720994, g: 0.93531, b: 1.5686259, a: 0}
+      second: {r: 0, g: 0, b: 0, a: 0}

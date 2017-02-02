@@ -24,7 +24,7 @@ Material:
     - first:
         name: ColourTexture
       second:
-        m_Texture: {fileID: 2800000, guid: 33b276b561f38184d82403370beeb3db, type: 2}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - first:
@@ -37,6 +37,12 @@ Material:
         name: PositionTexture
       second:
         m_Texture: {fileID: 8400000, guid: 957db09812b4247aaac607f4217660e3, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: SpriteMask
+      second:
+        m_Texture: {fileID: 2800000, guid: 3b9df3c00ee22364d8d013bb545e33c9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - first:
@@ -113,6 +119,12 @@ Material:
         name: DebugRandomIndex
       second: 0
     - first:
+        name: DebugSeamUv
+      second: 0
+    - first:
+        name: DebugWingUv
+      second: 0
+    - first:
         name: Density
       second: 1
     - first:
@@ -129,7 +141,7 @@ Material:
       second: 0
     - first:
         name: ParticleSize
-      second: 0.1
+      second: 0.63
     - first:
         name: ParticleSizeMax
       second: 0.1
@@ -141,7 +153,13 @@ Material:
       second: 0
     - first:
         name: Radius
-      second: 0.456
+      second: 2
+    - first:
+        name: RotationDegrees
+      second: 45
+    - first:
+        name: TriangleOutlineWidth
+      second: 0.006
     - first:
         name: _BumpScale
       second: 1

@@ -4,28 +4,23 @@
 	{
 		PositionTexture ("PositionTexture", 2D) = "white" {}
 		ColourTexture ("ColourTexture", 2D) = "white" {}
+		SpriteMask ("SpriteMask", 2D) = "white" {}
 		ParticleSize("ParticleSize",Range(0,2) ) = 1
-		ParticleSizeMax("ParticleSizeMax",Range(0,2) ) = 1
-		ParticleSizeMaxRand("ParticleSizeMaxRand",Range(0,2) ) = 1
-		Radius("Radius", Range(0,1) ) = 1
-		Density("Density", Range(0,1) ) = 1
-		FogColour("FogColour", COLOR ) = (0,0,0,1)
-		FogDistanceNear("FogDistanceNear", Range(0,99) ) = 20 
-		FogDistanceFar("FogDistanceFar", Range(0,100) ) = 100
-
-		BlobScreenRadius("BlobScreenRadius", Range(0,1) ) = 0.5
-		DebugBlob("DebugBlob", Range(0,1) ) = 0
+		Radius("Radius", Range(0,2) ) = 1
 		DebugRandomIndex("DebugRandomIndex", Range(0,1) ) = 0
-		//DelayedViewMatrix("DelayedViewMatrix", Matrix )
-		BrownianTexture ("BrownianTexture", 2D) = "white" {}
-		BrownianTimeScale("BrownianTimeScale", Range(0,10) ) = 1
-		BrownianSizeScale("BrownianSizeScale", Range(0,20) ) = 1
-		BrownianIndexScale("BrownianIndexScale", Range(1,50) ) = 10
+		DebugSeamUv("DebugSeamUv", Range(0,1) ) = 0
+		DebugWingUv("DebugWingUv", Range(0,1) ) = 0
+		
+			//DelayedViewMatrix("DelayedViewMatrix", Matrix )
 		PerlinTexture("PerlinTexture", 2D ) = "white" {}
 		PerlinOffsetScalar("PerlinOffsetScalar", Range(0,30) ) = 1
 
 		InstanceCacheOffset("InstanceCacheOffset", Range(0,200) ) = 0
 		InstanceCacheCount("InstanceCacheCount", Range(0,200) ) = 100
+
+			RotationDegrees("RotationDegrees", Range(-180,180)) = 0
+			TriangleOutlineWidth("TriangleOutlineWidth", Range(0,0.333) ) = 0.05
+
 	}
 	SubShader
 	{
@@ -54,11 +49,8 @@
 		#define SAMPLE_COLOUR
 		//#define ENABLE_DENSITY
 		#define ENABLE_LAGGED_VIEW
-		//#define ENABLE_BROWNIAN_BLOB_PATH
 		#define ENABLE_PERLIN_OFFSET
-		#define ENABLE_BLOBBING
-
-
+	
 		//	generate data from instance cache data
 		#define USE_INSTANCE_CACHES
 
@@ -67,22 +59,20 @@
 		#define USE_BOUNDING_BOX_POSITION
 		#endif
 
-		#if !SHADER_API_MOBILE
-		#define ENABLE_DEBUG_BLOB
-		#endif
-
+		
 			#include "UnityCG.cginc"
 			#include "../../PopUnityCommon/PopCommon.cginc"
 			#include "TexturePointBlock.cginc"
 
 			#define vector4	half4
 			#define vector3	half3
+			#define vector2	half2
 
 
 			struct appdata
 			{
 				vector4 LocalPos : POSITION;
-				float TriangleIndex : TEXCOORD0;
+				float2 TriangleIndex_LocalPointIndex : TEXCOORD0;
 
 			#if defined(INSTANCING)
 				UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -94,6 +84,10 @@
 				vector4 ScreenPos : SV_POSITION;
 				vector3 Colour : TEXCOORD0;
 				vector3 LocalPos : TEXCOORD1;
+				vector3 uvw : TEXCOORD2;
+				vector2 SeamUv : TEXCOORD3;
+				vector2 WingUv : TEXCOORD4;
+				float3 Bary : TEXCOORD5;
 
 			#if defined(INSTANCING)
 				UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -124,43 +118,23 @@
 			sampler2D ColourTexture;
 			float4 ColourTexture_TexelSize;
 			#endif
+			
+			sampler2D SpriteMask;
 
 			float ParticleSize;
 			float Radius;
+			float RotationDegrees;
+			float TriangleOutlineWidth;
 
-			#if defined(ENABLE_DENSITY)
-			float Density;
-			#endif
-
-			float3 FogColour;
-			float FogDistanceNear;
-			float FogDistanceFar;
-
-			//	two max's
-			float ParticleSizeMax;
-			float ParticleSizeMaxRand;
-			float BlobScreenRadius;
-
-			#if defined(ENABLE_DEBUG_BLOB)
-			int DebugBlob;
 			int DebugRandomIndex;
-			#else
-			#define DebugBlob	0
-			#define DebugRandomIndex	0
-			#endif
+			int DebugSeamUv;
+			int DebugWingUv;
 
 			#if defined(ENABLE_LAGGED_VIEW)
 			float4x4 DelayedViewMatrix;
 			#endif
 
-			#if defined(ENABLE_BROWNIAN_BLOB_PATH)
-			sampler2D BrownianTexture;
-			float4 BrownianTexture_TexelSize;
-			float BrownianTimeScale;
-			float BrownianSizeScale;
-			float BrownianIndexScale;	//	random number scaling
-			#endif
-
+		
 			#if defined(ENABLE_PERLIN_OFFSET)
 			sampler2D PerlinTexture;
 			float4 PerlinTexture_TexelSize;
@@ -212,40 +186,8 @@
 			#endif
 			}
 
-			float GetBlobFactor(float4 WorldPos)
-			{
-				//	get -1...1
-
-				#if defined(ENABLE_LAGGED_VIEW)
-				float4x4 ViewProjection = mul( UNITY_MATRIX_P, DelayedViewMatrix );
-				#else
-				float4x4 ViewProjection = UNITY_MATRIX_VP;
-				//float4x4 ViewProjection = mul( UNITY_MATRIX_P, UNITY_MATRIX_V );
-				#endif
-
-				float4 ScreenPos4 = mul( ViewProjection, WorldPos );
-				float2 ScreenPos = ScreenPos4.xy / ScreenPos4.w;
-
-				float Radius = length(ScreenPos);
-				float RadiusMax = hypotenuse( 1, 1 );
-				float BlobTime = Range( BlobScreenRadius, RadiusMax, Radius );
-				BlobTime = max( BlobTime, 0.0f );
-
-				//	when using the deffered view matrix, anything that WAS outside the viewport will be massive, so clamp
-				BlobTime = min( BlobTime, 1.0f );
-
-				return BlobTime;
-			}
-
-
-			float3 GetFoggedColour(float3 Rgb,float3 ParticlePosition,float3 CameraPosition)
-			{
-				float ParticleDistance = distance( ParticlePosition, CameraPosition );
-				float FogTime = Range( FogDistanceNear, FogDistanceFar, ParticleDistance );
-				FogTime = max( 0, min( FogTime, 1 ) );
-				return lerp( Rgb, FogColour, FogTime );
-			}
-
+			
+			
 			float2 GetUvFromU(float u,float4 TexelSize)
 			{
 				float2 uv;
@@ -269,39 +211,91 @@
 				offset *= PerlinOffsetScalar;
 				return offset;
 
-				#elif defined(ENABLE_BROWNIAN_BLOB_PATH)
-
-				float2 BrownianSize = BrownianTexture_TexelSize.zw;
-				float Time = _Time.x * BrownianTimeScale;
-				Time += ParticleOffset * BrownianIndexScale;
-				float u = frac( Time );
-				float v = floor(Time) / BrownianSize.y;
-				v = frac(v);
-				float3 Offset = tex2Dlod( BrownianTexture, float4(u,v,0,0) );
-				Offset *= BrownianSizeScale;
-				Offset *= BlobFactor;
-				return Offset;
-
+				
 				#else
 				return float3(0,0,0);
 				#endif
 			}
 
 
+			float2 GetSeamAlignedUv(float2 uv)
+			{
+				//	need to essentially rotate the UV's 45 degrees so our uv goes along the seam
+				//	-1,-1 topleft becomes -1,05
+				//	1,-1 topright becomes 05,-1
+
+				float s = sin ( radians(RotationDegrees) );
+				float c = cos ( radians(RotationDegrees) );
+				float2x2 rotationMatrix = float2x2( c, -s, s, c);
+				/*
+				rotationMatrix *=0.5;
+				rotationMatrix +=0.5;
+				rotationMatrix = rotationMatrix * 2-1;
+				*/
+				uv = mul ( uv, rotationMatrix );
+				
+				//	scale down as when we rotate we go out of bounds
+				float Scale = hypotenuse(1,1);
+				uv *= Scale;
+
+				float u = Range( -1, 1, uv.x );
+				float v = Range( -1, 1, uv.y );
+				return float2( u,v );
+			}
+
+			float2 GetWingUv(float2 SeamAlignedUv)
+			{
+				float v = SeamAlignedUv.y;
+				float u = SeamAlignedUv.x;
+				
+				if ( SeamAlignedUv.x < 0.5f )
+					u = Range( 0.5f, 0, SeamAlignedUv.x );
+				else
+					u = Range( 0.5f, 1, SeamAlignedUv.x );
+				u = clamp( 0, 1, u );
+				v = clamp( 0, 1, v );
+
+				return float2(u,v);
+			}
+
+			//	uv is -1 to 1
+			float3 GetWingPos(float2 uv,float2 WingUv)
+			{
+				float FlapTime = _CosTime.w;
+				//float FlapTime = 0;
+
+				//float u = abs( uv.x );
+
+				//	middle height = 0
+				float y = WingUv.x * FlapTime;
+				//float y = 0;
+
+				//	now square it
+				float x = uv.x;
+				float z = uv.y;
+
+				return float3( x,y,z ) * ParticleSize;
+			}
+
 
 			v2f vert (appdata v)
 			{
 				v2f o;
+
+				int TriangleIndex = v.TriangleIndex_LocalPointIndex.x;
+				int LocalPointIndex = v.TriangleIndex_LocalPointIndex.y;
+
+
 			#if defined(INSTANCING)
 				UNITY_SETUP_INSTANCE_ID (v);
 				UNITY_TRANSFER_INSTANCE_ID (v, o);	
-						
+				
 				int ThisDataTextureIndexOffset = UNITY_ACCESS_INSTANCED_PROP (DataTextureIndexOffset).x;
 				int ThisPointCount = UNITY_ACCESS_INSTANCED_PROP(PointCount).x;
 				float3 ThisBoundsMin = UNITY_ACCESS_INSTANCED_PROP(BoundsMin).xyz;
 				float3 ThisBoundsMax = UNITY_ACCESS_INSTANCED_PROP(BoundsMax).xyz;
 				bool ThisVisible = UNITY_ACCESS_INSTANCED_PROP(Visible).x > 0;
-				float ThisRandom = v.TriangleIndex / (float)ThisPointCount;
+				float ThisRandom = TriangleIndex / (float)ThisPointCount;
 			#endif
 
 				bool Degenerate = false;
@@ -309,7 +303,8 @@
 			
 				int BlockSubIndex;
 				TTexturePointBlock Block = GetInvalidTTexturePointBlock();
-				GetTexturePointBlock( Block, v.TriangleIndex, BlockSubIndex);
+
+				GetTexturePointBlock( Block, TriangleIndex, BlockSubIndex);
 				Degenerate = !TTexturePointBlock_IsValid(Block);
 
 				int ThisDataTextureIndexOffset = TTexturePointBlock_DataTextureIndexOffset(Block);
@@ -336,20 +331,12 @@
 				}
 			#endif
 
-			#if defined(ENABLE_DENSITY)
-				#if defined(USE_INSTANCE_CACHES)
-				#error can't do ENABLE_DENSITY and USE_INSTANCE_CACHES
-				#endif
-				float Indexf = DataIndex / (float)ThisPointCount;
-				Indexf *= 1.0f / Density;
-				if ( Indexf > 1 )
-				{
-					return (v2f)0;
-				}
-			#endif
 
 				vector3 LocalPos = v.LocalPos.xyz;
 				o.LocalPos = LocalPos;
+				o.uvw = o.LocalPos;
+				o.SeamUv = GetSeamAlignedUv( o.LocalPos );
+				o.WingUv = GetWingUv( o.SeamUv );
 
 				//	data w is luminance (for when testing without colour sampling, or maybe later being used for a palette lookup, 
 				//	but performance doesnt seem to make much difference with texture lookups, very fast on mobile. fill rate/tile touching hurts more
@@ -357,39 +344,23 @@
 				o.Colour = GetDataTextureColour( PointIndex, DataPosition.w );
 				DataPosition.w = 1;
 
+				float3 Barys[4] = 
+				{ 
+					float3(1,0,0),	//	top left - left triangle only
+					float3(0,1,0),	//	top right
+					float3(0,0,1),	//	bottom left
+					float3(1,0,0),	//	bottom right - right triangle only
+				};
+				o.Bary = Barys[LocalPointIndex];
 
-				vector4 WorldPos = mul( unity_ObjectToWorld, DataPosition );
 
-			#if defined(ENABLE_BLOBBING)
-				//	scale the particle size by blobbing, which is based on screen pos
-				//	gr: scale before noise
-				float BlobScalar = GetBlobFactor( WorldPos );
+				LocalPos = GetWingPos( LocalPos, o.WingUv );
 
-				float3 Offset = GetNoiseOffset( ThisRandom );
-				float NoiseBlobScalar = BlobScalar;
-				WorldPos.xyz += Offset * NoiseBlobScalar;
-
-				//	rescale again so particles flying into the middle of our view don't obscure us
-				BlobScalar = GetBlobFactor( WorldPos );
-
-				float ParticleSizeMixed = lerp( ParticleSizeMax, ParticleSizeMaxRand, ThisRandom );
-				float ParticleSized = lerp( ParticleSize, ParticleSizeMixed, BlobScalar );
-				vector3 ParticleSize3 = mul( unity_ObjectToWorld, vector4( ParticleSized,ParticleSized,ParticleSized,0 ) );
-			#else
 				vector3 ParticleSize3 = float3( ParticleSize,ParticleSize,ParticleSize );
-			#endif
-				//	gr: todo: cap SCREEN space size (in frag?)
-
-				//	+ offset here is billboarding in view space
-				vector4 ViewPos = mul( UNITY_MATRIX_V, WorldPos ) + vector4( LocalPos * ParticleSize3, 1 );
-				o.ScreenPos = mul( UNITY_MATRIX_P, ViewPos );
-
-
-				o.Colour.xyz = GetFoggedColour( o.Colour.xyz, WorldPos.xyz, _WorldSpaceCameraPos );
-
-				if ( DebugBlob )
-					o.Colour.xyz = NormalToRedGreen( GetBlobFactor(WorldPos) );
-
+			
+				vector3 WorldPos =  mul( unity_ObjectToWorld, DataPosition + LocalPos );
+				o.ScreenPos = mul( UNITY_MATRIX_VP, float4(WorldPos,1) );
+			
 				if ( DebugRandomIndex )
 					o.Colour.xyz = NormalToRedGreen( ThisRandom );
 
@@ -408,9 +379,40 @@
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
+				if ( min3( i.Bary.x,i.Bary.y,i.Bary.z ) < TriangleOutlineWidth )
+					return float4(1,1,1,1);
+
+			if ( i.SeamUv.x > 1 )	discard;
+			if ( i.SeamUv.y > 1 )	discard;
+			if ( i.SeamUv.x < 0 )	discard;
+			if ( i.SeamUv.y < 0 )	discard;
+
+				float3 Mask3 = tex2D( SpriteMask, i.SeamUv ).xyz;
+				
+				if ( Mask3.y < 0.5f && Mask3.x > 0.5f )
+					discard;
+				
 				if ( length(i.LocalPos) > Radius )
 					discard;
 
+				/*
+				if ( i.WingUv.x > 0.98f )
+					return float4(0,1,0,1);
+
+				if ( i.SeamUv.x > 0.98f )
+					return float4(0,0,1,1);
+				if ( i.SeamUv.x < 1-0.98f )
+					return float4(0,0,1,1);
+					*/
+				if ( DebugSeamUv )
+					return float4( i.SeamUv, 0, 1);
+
+				if ( DebugWingUv )
+					return float4( i.WingUv.xy,0, 0 );
+
+				float3 rgb = Mask3 * float3(1-i.WingUv,0);
+				return float4( rgb, 1 );
+				return vector4( i.uvw, 1 );
 				return vector4( i.Colour, 1);
 			}
 			ENDCG

@@ -10,8 +10,8 @@ public class InitButterflyCloud : MonoBehaviour {
 	public bool _GenerateRandomParticles;
 
 	[Range(1,100)]
-	public float		PointCountM = 1;
-	public int			PointCount {	get { return (int)(PointCountM*1000000); } }
+	public float		PointCountK = 1;
+	public int			PointCount {	get { return (int)(PointCountK*1000); } }
 	
 	[Range(0.1f,100.0f)]
 	public float		Width = 10;
