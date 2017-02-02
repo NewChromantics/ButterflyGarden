@@ -1,8 +1,9 @@
-﻿Shader "MLF/TexturePointBlock"
+﻿Shader "New Chromantics/TexturePointBlockButterflys"
 {
 	Properties
 	{
 		PositionTexture ("PositionTexture", 2D) = "white" {}
+		OriginalPositionTexture ("OriginalPositionTexture", 2D) = "white" {}
 		ColourTexture ("ColourTexture", 2D) = "white" {}
 		SpriteMask ("SpriteMask", 2D) = "white" {}
 		ParticleSize("ParticleSize",Range(0,2) ) = 1
@@ -21,7 +22,10 @@
 		RotationDegrees("RotationDegrees", Range(-180,180)) = 0
 		TriangleOutlineWidth("TriangleOutlineWidth", Range(0,0.333) ) = 0.05
 
-		FlapSpeed("FlapSpeed", Range(0,20) ) = 1
+		FlapSpeed("FlapSpeed", Range(0,200) ) = 1
+		FlapHeightMin("FlapHeightMin", Range(-1,1) ) = 1
+		FlapHeightMaxA("FlapHeightMaxA", Range(-1,1) ) = 1
+		FlapHeightMaxB("FlapHeightMaxB", Range(-1,1) ) = 1
 	}
 	SubShader
 	{
@@ -62,8 +66,8 @@
 
 		
 			#include "UnityCG.cginc"
-			#include "../../PopUnityCommon/PopCommon.cginc"
-			#include "TexturePointBlock.cginc"
+			#include "../PopUnityCommon/PopCommon.cginc"
+			#include "TexturePointBlock/TexturePointBlock.cginc"
 
 			#define vector4	half4
 			#define vector3	half3
@@ -112,6 +116,7 @@
 
 			#if defined(SAMPLE_POSITION)
 			sampler2D PositionTexture;
+			sampler2D OriginalPositionTexture;
 			float4 PositionTexture_TexelSize;
 			#endif
 
@@ -144,6 +149,9 @@
 			#endif
 
 			float FlapSpeed;
+			float FlapHeightMin;
+			float FlapHeightMaxA;
+			float FlapHeightMaxB;
 
 		
 			vector4 GetDataTexturePosition(int PointIndex,float3 BoundsMin,float3 BoundsMax)
@@ -155,6 +163,9 @@
 				
 				float2 uv = float2( x, y ) * PositionTexture_TexelSize.xy;
 				vector4 Position = tex2Dlod( PositionTexture, float4(uv,0,0) );
+
+				//	the physics blit's lose alpha, get the original
+				Position.w = tex2Dlod( OriginalPositionTexture, float4(uv,0,0) ).w;
 			#endif
 
 				/*
@@ -263,10 +274,10 @@
 			//	uv is -1 to 1
 			float3 GetWingPos(float2 uv,float2 WingUv,float Random)
 			{
-				float FlapTime = cos(_Time.x * FlapSpeed) + Random;
-				if ( FlapTime > 1 )
-					FlapTime -= 2;
-
+				float Angle = lerp( 0, 360, Random );
+				Angle += lerp( 0, 360, frac( _Time.x * FlapSpeed ) );
+				float FlapTime = cos( radians(Angle) );
+				
 				//float FlapTime = 0;
 
 				//float u = abs( uv.x );
@@ -387,11 +398,14 @@
 				if ( TriangleOutlineWidth > 0 )
 					if ( min3( i.Bary.x,i.Bary.y,i.Bary.z ) < TriangleOutlineWidth )
 						return float4(1,1,1,1);
-
+			
 			if ( i.SeamUv.x > 1 )	discard;
 			if ( i.SeamUv.y > 1 )	discard;
 			if ( i.SeamUv.x < 0 )	discard;
 			if ( i.SeamUv.y < 0 )	discard;
+
+				if ( DebugRandomIndex )
+					return float4( i.Colour, 1);
 
 				float3 Mask3 = tex2D( SpriteMask, i.SeamUv ).xyz;
 				

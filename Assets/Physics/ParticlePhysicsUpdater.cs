@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class ParticlePhysicsUpdater : MonoBehaviour {
 	
+	[InspectorButton("Initialise")]
+	public bool				_Initialise;
 
 	public RenderTexture	Velocitys;
 	public RenderTexture	Positions;
@@ -27,9 +29,9 @@ public class ParticlePhysicsUpdater : MonoBehaviour {
 	public bool				UpdateInCoroutine = false;
 
 
-	void Start () {
-
-		//	these should all be the same dimensions
+	public void Initialise()
+	{
+				//	these should all be the same dimensions
 		LastPositions = new RenderTexture (Positions.width, Positions.height, 0, Positions.format);
 		LastVelocitys = new RenderTexture (Velocitys.width, Velocitys.height, 0, Velocitys.format);
 
@@ -53,6 +55,13 @@ public class ParticlePhysicsUpdater : MonoBehaviour {
 		}
 
 		Graphics.Blit( Positions, PositionsOriginal );
+	}
+
+
+	void Start () {
+
+		Initialise();
+
 	}
 
 	void Update () {

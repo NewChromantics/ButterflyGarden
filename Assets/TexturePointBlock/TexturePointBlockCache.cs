@@ -13,6 +13,15 @@ public class TexturePointBlockCache : MonoBehaviour {
 	public bool						_LoadCache;
 	[InspectorButton("SaveCache")]
 	public bool						_SaveCache;
+	[InspectorButton("ClearCache")]
+	public bool						_ClearCache;
+
+	[InspectorButton("WriteRandomW")]
+	public bool						_WriteRandomW;
+
+	[InspectorButton("ShuffleBlockPositions")]
+	public bool						_ShuffleBlockPositions;
+
 
 	//	would be nice to keep the texture square somehow, but we also need to work out platform limits (like 8192x8192)
 	public int						DataWidth = 512;
@@ -211,6 +220,23 @@ public class TexturePointBlockCache : MonoBehaviour {
 		AddBlock (BoundingBox, PositionsAsColour, Colours);
 	}
 
+	public void ClearCache()
+	{
+		#if UNITY_EDITOR
+
+		AssetWriter.DeleteAsset(CacheAssetPath + "/PositionData" );
+		AssetWriter.DeleteAsset(CacheAssetPath + "/ColourData" );
+		AssetWriter.DeleteAsset(CacheAssetPath + "/DumbTriangleMesh" );
+		Blocks.Clear();
+
+		var mf = GetComponent<MeshFilter>();
+		if ( mf )
+			mf.sharedMesh = null;
+
+		#else
+		throw new System.Exception("SaveCache only for editor");
+		#endif
+	}
 
 	public void SaveCache()
 	{
@@ -235,9 +261,14 @@ public class TexturePointBlockCache : MonoBehaviour {
 	public void LoadCache()
 	{
 		#if UNITY_EDITOR
-		BlockPositions = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D> (CacheAssetPath + "/PositionData");
-		BlockColours = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D> (CacheAssetPath + "/ColourData");
-		var DumbTriangleMesh = UnityEditor.AssetDatabase.LoadAssetAtPath<Mesh> (CacheAssetPath + "/DumbTriangleMesh");
+		System.Func<string,string> GetAssetPath = (name) =>
+		{
+			return "Assets/" + CacheAssetPath + name + ".asset";
+		};
+
+		BlockPositions = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D> (GetAssetPath("/PositionData"));
+		BlockColours = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D> (GetAssetPath("/ColourData"));
+		var DumbTriangleMesh = UnityEditor.AssetDatabase.LoadAssetAtPath<Mesh> (GetAssetPath("/DumbTriangleMesh"));
 
 		var mf = GetComponent<MeshFilter> ();
 		if (mf)
@@ -246,6 +277,74 @@ public class TexturePointBlockCache : MonoBehaviour {
 		OnChanged.Invoke();
 		#else
 		throw new System.Exception("SaveCache only for editor");
+		#endif
+	}
+
+
+	void WriteRandomW()
+	{
+		var Pixels = BlockPositions.GetPixels ();
+		for (int i = 0;	i < Pixels.Length;	i++) {
+			Pixels [i].a = Random.Range (0.0f, 1.0f);
+		}
+		BlockPositions.SetPixels (Pixels);
+		BlockPositions.Apply ();
+		OnChanged.Invoke();
+	}
+
+
+	void ShuffleBlockPositions_Block(TTexturePointBlock Block)
+	{
+		int First = Block.DataTextureIndexOffset;
+		int Count = Block.PointCount;
+
+		var PositionPixels = BlockPositions.GetPixels ();
+		var ColourPixels = BlockColours.GetPixels ();
+
+		//	grab a copy of all the pixels
+		var BlockPositionPixels = new List<Color>();
+		var BlockColourPixels = new List<Color>();
+		for (int i = 0;	i < Count;	i++) {
+			BlockPositionPixels.Add (PositionPixels [First + i]);
+			BlockColourPixels.Add (ColourPixels [First + i]);
+		}
+
+		//	write back pixels at random removing the used ones as we go
+		for (int i = 0;	i < Count;	i++) {
+			var RandomIndex = Random.Range (0, BlockPositionPixels.Count - 1);
+			PositionPixels [First + i] = BlockPositionPixels [RandomIndex];
+			ColourPixels [First + i] = BlockColourPixels [RandomIndex];
+			BlockPositionPixels.RemoveAt (RandomIndex);
+			BlockColourPixels.RemoveAt (RandomIndex);
+		}
+
+		BlockPositions.SetPixels (PositionPixels);
+		BlockPositions.Apply ();
+		BlockColours.SetPixels (ColourPixels);
+		BlockColours.Apply ();
+	}
+
+	void ShuffleBlockPositions()
+	{
+		#if UNITY_EDITOR
+		var Title = "Shuffling block positions";
+		UnityEditor.EditorUtility.DisplayProgressBar (Title, "Starting...", 0);
+
+		try
+		{
+			for (int b=0;	b<Blocks.Count;	b++ ) 
+			{
+				var Block = Blocks[b];
+				UnityEditor.EditorUtility.DisplayProgressBar (Title, "Shuffling block " + b + " (" + Block.PointCount + " points)", b/(float)Blocks.Count );
+				ShuffleBlockPositions_Block (Block);
+			}	
+			UnityEditor.EditorUtility.ClearProgressBar ();
+		}
+		catch (System.Exception e)
+		{
+			Debug.LogException (e);
+			UnityEditor.EditorUtility.ClearProgressBar ();
+		}
 		#endif
 	}
 }

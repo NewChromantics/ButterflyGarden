@@ -6,8 +6,8 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: TexturePointBlock
-  m_Shader: {fileID: 4800000, guid: 54e2866fafbad4e3bafbc3115e2396ec, type: 3}
+  m_Name: TexturePointBlock Butterflys
+  m_Shader: {fileID: 4800000, guid: b97eefa05992afb47a1e4856ab39275d, type: 3}
   m_ShaderKeywords: _EMISSION
   m_LightmapFlags: 1
   m_CustomRenderQueue: -1
@@ -30,7 +30,7 @@ Material:
     - first:
         name: PerlinTexture
       second:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 8359520b983dd8148966a34281add408, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - first:
@@ -117,7 +117,7 @@ Material:
       second: 0
     - first:
         name: DebugRandomIndex
-      second: 0
+      second: 1
     - first:
         name: DebugSeamUv
       second: 0
@@ -129,7 +129,7 @@ Material:
       second: 1
     - first:
         name: FlapSpeed
-      second: 1
+      second: 18.6
     - first:
         name: FogDistanceFar
       second: 100
