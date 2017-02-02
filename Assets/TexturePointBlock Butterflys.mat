@@ -24,7 +24,13 @@ Material:
     - first:
         name: ColourTexture
       second:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 410540c5079f1da46bf1d48f99560242, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: OriginalPositionTexture
+      second:
+        m_Texture: {fileID: 2800000, guid: 1d70ae14048f31b4f8a2ad018cbe5412, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - first:
@@ -117,7 +123,7 @@ Material:
       second: 0
     - first:
         name: DebugRandomIndex
-      second: 1
+      second: 0
     - first:
         name: DebugSeamUv
       second: 0
@@ -128,8 +134,17 @@ Material:
         name: Density
       second: 1
     - first:
+        name: FlapHeightMaxA
+      second: 1.37
+    - first:
+        name: FlapHeightMaxB
+      second: 2
+    - first:
+        name: FlapHeightMin
+      second: -0.86
+    - first:
         name: FlapSpeed
-      second: 18.6
+      second: 59
     - first:
         name: FogDistanceFar
       second: 100
@@ -144,7 +159,7 @@ Material:
       second: 0
     - first:
         name: ParticleSize
-      second: 0.63
+      second: 0.11
     - first:
         name: ParticleSizeMax
       second: 0.1
@@ -212,6 +227,18 @@ Material:
         name: _ZWrite
       second: 1
     m_Colors:
+    - first:
+        name: ColourAA
+      second: {r: 1, g: 0.47586206, b: 0, a: 1}
+    - first:
+        name: ColourAB
+      second: {r: 0.11724138, g: 1, b: 0, a: 1}
+    - first:
+        name: ColourBA
+      second: {r: 1, g: 0.1397059, b: 0.86947244, a: 1}
+    - first:
+        name: ColourBB
+      second: {r: 0, g: 0.7931032, b: 1, a: 1}
     - first:
         name: FogColour
       second: {r: 0.6, g: 0.65882355, b: 0.7372549, a: 1}

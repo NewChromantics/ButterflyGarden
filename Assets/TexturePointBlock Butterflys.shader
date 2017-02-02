@@ -23,9 +23,14 @@
 		TriangleOutlineWidth("TriangleOutlineWidth", Range(0,0.333) ) = 0.05
 
 		FlapSpeed("FlapSpeed", Range(0,200) ) = 1
-		FlapHeightMin("FlapHeightMin", Range(-1,1) ) = 1
-		FlapHeightMaxA("FlapHeightMaxA", Range(-1,1) ) = 1
-		FlapHeightMaxB("FlapHeightMaxB", Range(-1,1) ) = 1
+		FlapHeightMin("FlapHeightMin", Range(-3,3) ) = 1
+		FlapHeightMaxA("FlapHeightMaxA", Range(-3,3) ) = 1
+		FlapHeightMaxB("FlapHeightMaxB", Range(-3,3) ) = 1
+
+		ColourAA("ColourAA", COLOR ) = (1,0,0,1)
+		ColourAB("ColourAB", COLOR ) = (1,1,0,1)
+		ColourBA("ColourBA", COLOR ) = (0,1,0,1)
+		ColourBB("ColourBB", COLOR ) = (0,0,1,1)
 	}
 	SubShader
 	{
@@ -93,6 +98,7 @@
 				vector2 SeamUv : TEXCOORD3;
 				vector2 WingUv : TEXCOORD4;
 				float3 Bary : TEXCOORD5;
+				float Random : TEXCOORD6;
 
 			#if defined(INSTANCING)
 				UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -153,6 +159,10 @@
 			float FlapHeightMaxA;
 			float FlapHeightMaxB;
 
+			float3 ColourAA;
+			float3 ColourAB;
+			float3 ColourBA;
+			float3 ColourBB;
 		
 			vector4 GetDataTexturePosition(int PointIndex,float3 BoundsMin,float3 BoundsMax)
 			{
@@ -282,8 +292,12 @@
 
 				//float u = abs( uv.x );
 
+				FlapTime = Range( -1, 1, FlapTime );
+				float FlapHeightMax = lerp( FlapHeightMaxA, FlapHeightMaxB, Random );
+				float FlapHeight = lerp( FlapHeightMin, FlapHeightMax, FlapTime );
+
 				//	middle height = 0
-				float y = WingUv.x * FlapTime;
+				float y = WingUv.x * FlapHeight;
 				//float y = 0;
 
 				//	now square it
@@ -368,7 +382,7 @@
 					float3(1,0,0),	//	bottom right - right triangle only
 				};
 				o.Bary = Barys[LocalPointIndex];
-
+				o.Random = Random;
 
 				LocalPos = GetWingPos( LocalPos, o.WingUv, Random );
 
@@ -430,7 +444,12 @@
 				if ( DebugWingUv )
 					return float4( i.WingUv.xy,0, 0 );
 
-				float3 rgb = Mask3 * float3(1-i.WingUv,0);
+				float3 ColourA = lerp( ColourAA, ColourAB, i.WingUv.y );
+				float3 ColourB = lerp( ColourBA, ColourBB, i.WingUv.y );
+
+				float3 rgb = lerp( ColourA, ColourB, i.Random );
+				rgb *= Mask3;
+
 				return float4( rgb, 1 );
 				return vector4( i.uvw, 1 );
 				return vector4( i.Colour, 1);

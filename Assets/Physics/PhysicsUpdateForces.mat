@@ -69,10 +69,10 @@ Material:
       second: 2.02
     - first:
         name: AvoidRadius
-      second: 0.262
+      second: 0.124
     - first:
         name: AvoidScalar
-      second: 78
+      second: 74
     - first:
         name: BounceRandomMax
       second: 1
@@ -118,4 +118,4 @@ Material:
       second: {r: 0, g: 0, b: 0, a: 0}
     - first:
         name: Avoid1
-      second: {r: 0, g: 0, b: 0, a: 0}
+      second: {r: 1.1198119, g: 0.8834815, b: 1.7873223, a: 0}
