@@ -1,0 +1,106 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: PhysicsInstancedBillboards
+  m_Shader: {fileID: 4800000, guid: 5e0508a817f5b4f77849ffdd828845a0, type: 3}
+  m_ShaderKeywords: 
+  m_LightmapFlags: 5
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  m_SavedProperties:
+    serializedVersion: 2
+    m_TexEnvs:
+    - first:
+        name: ForceTexture
+      second:
+        m_Texture: {fileID: 8400000, guid: 10bb96e420294484281cd99bb0c39b35, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: PerlinTexture
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: PositionTexture
+      second:
+        m_Texture: {fileID: 8400000, guid: 957db09812b4247aaac607f4217660e3, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: VelocityTexture
+      second:
+        m_Texture: {fileID: 8400000, guid: 0d698c46605e94eaebcda99fd081ad35, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - first:
+        name: AlphaFadeInSecs
+      second: 8.6
+    - first:
+        name: AlphaMult
+      second: 1
+    - first:
+        name: AngleNoiseTimeScale
+      second: 1
+    - first:
+        name: AxisNoiseTimeScale
+      second: 0.1
+    - first:
+        name: AxisOrPerlinNoise
+      second: 1
+    - first:
+        name: DebugColour
+      second: 0
+    - first:
+        name: DistanceToGazeMax
+      second: 20
+    - first:
+        name: ForceGlowRgbaScalar
+      second: 0
+    - first:
+        name: ForceMax
+      second: 30
+    - first:
+        name: GlowRgbaScalar
+      second: 0.83
+    - first:
+        name: NoiseScaleMax
+      second: 1
+    - first:
+        name: NoiseScaleMin
+      second: 0.1
+    - first:
+        name: ParticleSize
+      second: 0.139
+    - first:
+        name: Radius
+      second: 0.069
+    - first:
+        name: RgbaScalar
+      second: 0.2
+    - first:
+        name: UseDebugColour
+      second: 0
+    - first:
+        name: UseVertexColour
+      second: 0
+    - first:
+        name: VelocityGlowRgbaScalar
+      second: 1
+    - first:
+        name: VelocityMax
+      second: 10
+    m_Colors:
+    - first:
+        name: FadeFromColour
+      second: {r: 0, g: 0, b: 0, a: 0}
+    - first:
+        name: ParticleColour
+      second: {r: 0, g: 1, b: 0, a: 1}

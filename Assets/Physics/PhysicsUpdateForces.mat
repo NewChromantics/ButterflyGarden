@@ -1,0 +1,121 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: PhysicsUpdateForces
+  m_Shader: {fileID: 4800000, guid: de991fd4251e443448c4e705f738917d, type: 3}
+  m_ShaderKeywords: 
+  m_LightmapFlags: 5
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  m_SavedProperties:
+    serializedVersion: 2
+    m_TexEnvs:
+    - first:
+        name: PositionOriginals
+      second:
+        m_Texture: {fileID: 2800000, guid: 048bd411b034bcb44aaf79ae543c0aac, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: Positions
+      second:
+        m_Texture: {fileID: 8400000, guid: 957db09812b4247aaac607f4217660e3, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: Randoms
+      second:
+        m_Texture: {fileID: 2800000, guid: 517d2453283ba034db8c5f5dcf8f7577, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: SpringPositions
+      second:
+        m_Texture: {fileID: 8400000, guid: 344b3acb643d143359ca2ff867cae660, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: Velocitys
+      second:
+        m_Texture: {fileID: 8400000, guid: 0d698c46605e94eaebcda99fd081ad35, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - first:
+        name: AvoidGaze01ForceUnitPerSec
+      second: 0
+    - first:
+        name: AvoidGaze01PerlinFactor
+      second: 0
+    - first:
+        name: AvoidGaze12ForceUnitPerSec
+      second: 0
+    - first:
+        name: AvoidGaze12PerlinFactor
+      second: 0
+    - first:
+        name: AvoidGazeForceUnitPerSec
+      second: 1
+    - first:
+        name: AvoidGazeForceUnityPerSec
+      second: 19.2
+    - first:
+        name: AvoidGazePerlinScalar
+      second: 2.02
+    - first:
+        name: AvoidRadius
+      second: 0.262
+    - first:
+        name: AvoidScalar
+      second: 78
+    - first:
+        name: BounceRandomMax
+      second: 1
+    - first:
+        name: BounceRandomMin
+      second: 0.533
+    - first:
+        name: BounceScalar
+      second: 1.4
+    - first:
+        name: DampenPerSec
+      second: 0.2
+    - first:
+        name: DistanceToGazeMax
+      second: 0
+    - first:
+        name: EnableFloor_Boolean
+      second: 1
+    - first:
+        name: GravityUnitPerSec
+      second: 3.82
+    - first:
+        name: IdlePerlinUnitPerSec
+      second: 0
+    - first:
+        name: PerlinScalar
+      second: 8.89
+    - first:
+        name: SpringForceUnitPerSec
+      second: 0
+    - first:
+        name: SpringPerlinFactor
+      second: 0
+    - first:
+        name: SpringPerlinScalar
+      second: 0
+    - first:
+        name: TargetOffsetScalar
+      second: 0
+    m_Colors:
+    - first:
+        name: Avoid0
+      second: {r: 0, g: 0, b: 0, a: 0}
+    - first:
+        name: Avoid1
+      second: {r: 1.3720994, g: 0.93531, b: 1.5686259, a: 0}

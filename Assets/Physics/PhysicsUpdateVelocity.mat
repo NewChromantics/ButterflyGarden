@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: PhysicsUpdateVelocity
+  m_Shader: {fileID: 4800000, guid: f99255f2637434c85b04e7d3dabce965, type: 3}
+  m_ShaderKeywords: 
+  m_LightmapFlags: 5
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  m_SavedProperties:
+    serializedVersion: 2
+    m_TexEnvs:
+    - first:
+        name: Drags
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: Forces
+      second:
+        m_Texture: {fileID: 8400000, guid: 10bb96e420294484281cd99bb0c39b35, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: LastVelocitys
+      second:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: Positions
+      second:
+        m_Texture: {fileID: 8400000, guid: 957db09812b4247aaac607f4217660e3, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - first:
+        name: Randoms
+      second:
+        m_Texture: {fileID: 8400000, guid: 664028a88ffae4aa59e4d30df57cb893, type: 2}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - first:
+        name: DampenPerSec
+      second: 1
+    - first:
+        name: DeaccellerationSecs
+      second: 0.647
+    - first:
+        name: DragScalar
+      second: 0.4
+    - first:
+        name: Gravity
+      second: 8
+    - first:
+        name: GravityUnitPerSec
+      second: 0
+    - first:
+        name: SpringForceUnitPerSec
+      second: 5.2
+    - first:
+        name: TargetOffsetScalar
+      second: 1.29
+    m_Colors: []
